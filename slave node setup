@@ -48,7 +48,7 @@
 		Reload privilege tables now? [Y/n] <y>
 		
     
-16, Now get mysql schemas with below command
+11, Now get mysql schemas with below command
 	    mysql -e "show schemas"
 	
 	if your getting the below error:
@@ -70,8 +70,90 @@
 	
 	now try to log in to mysql it should login directly to mysql.
   
-  
-  
+12, do the below steps when 21 step complted from the master set-up file
+
+	
+13, now create a database with the below command
+		mysql -e "create database db1"
+		
+		now db1 is created we can see with the below commad
+		
+			mysql -e "show schemas"
+		
+	now chwck the dumped data from the master with the below command
+		ls 
+		
+		we should see db1.sql backup dump
+	
+	now impoet hte database with the below	command
+		mysql db1 < db1.sql 
+	
+14, now log in to the mysql with the below commad
+		mysql
+		
+	give thte below commads
+		use db1
+		
+		show tables;
+			
+	    you should see the tables created in the master server in this slave server
+
+15, give the below commad to verify the table content
+			select * from dbtb1;
+			
+		this commad	should show the table content wich added in master serive
+		
+		now quit from mariadb with the below commad
+			
+			quit
+			
+16, now we need to complete mysql slave configuraion and add the below lines to the file
+
+	vi /etc/my.cnf
+	 
+	
+	server-id=2
+	replicate-wild-do-table=db1.%
+
+			here db1 contnent will replicated from master as we specified in file with db1.%
+			
+	save the file and restart the mariadb with the below commad
+
+			systemctl restart mariadb
+			
+17, now in the master database server we need to unlock the tables
+
+18, after unlocking the tables
+	we need to tell master server details to salve serive with the below commad
+	
+		mysql
+		change master to
+    -> master_host='172.31.40.42',
+    -> master_user='root',
+    -> master_password='admin',
+    ->  master_log_file='mysql-bin.000001',
+    -> master_log_pos=245;
+		
+		we should get the below conformation
+		Query OK, 0 rows affected (0.00 sec)
+	now give the below command
+	
+			start slave
+			
+				it should gove the below configuraion with out any issues
+				Query OK, 0 rows affected (0.00 sec)
+		
+	now give the below command to check the status of the slave db server
+	
+			show slave status
+					
+					above command will print unredable output
+			
+			show slave status\G;
+			
+					this above command will print reble output 
+					
+		
   
   
   
