@@ -155,7 +155,34 @@ Replication and Master-slave configuraion on centos 7 servers
 		+------------------+----------+--------------+------------------+
 		| mysql-bin.000001 |      245 |              |                  |
 		+------------------+----------+--------------+------------------+
+	
+	we need the below 2 values
 		
+		file: mysql-bin.000001
+		position: 245
+		
+	now lock the talbes with read lock with below
+			flush tables with read lock;
+			
+20, now we'll dump the db1 
+	 we will get the db details with the below command
+		show schemas;
+		
+	from the in other tab from the root user give the below commands to dump the db1 
+		mysqldump db1 > db1.sql
+		
+	now check db1.sql created or not in your working dir with the below command
+	 ls
+	
+	now copy the dump to the slave server wth the below command
+		scp db1.sql 3.19.58.0:/root/
+		
+21, after the 17th step in the slave srver we need to unlock the db tables 
+	with the below command
+		mysql 
+		unlock tables;
+		
+			first it will login to the mysql server then unlocks the tables
 	
 	
 	
