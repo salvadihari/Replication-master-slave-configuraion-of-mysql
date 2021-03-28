@@ -1,0 +1,170 @@
+
+Replication and Master-slave configuraion on centos 7 servers
+
+
+1, establish ssh connection bitween both the master and slave servers
+	follow the below link
+
+	https://github.com/salvadihari/ssh-passwd-less-authentication/blob/main/ssh_passwd_less_config
+
+
+2, install mariadb-server on both the centos 7 servers
+
+	yum install mariadb-server 
+
+3, enable the mariadb-server and start the server 
+	systemctl status mariadb
+
+	systemctl enable  mariadb && systemctl start mariadb && systemctl status mariadb
+
+4, install the net tools to enable the port of mysql
+	yum install net-tools
+
+5, install firewalld service is not installed in your server
+	yum install firewalld
+	systemctl unmask firewalld && systemctl enable firewalld && systemctl start firewalld
+	systemctl status firewalld
+	
+6, check if the mysql service is presenr or not 
+	firewall-cmd --get-services | grep mysql --color
+	
+7, add mysql serive permanently to the firewall 
+
+	firewall-cmd --permanent --add-service=mysql
+
+8, now reload the firewall
+	firewall-cmd --reload 
+	
+9, run below command to know mysql service is there or not in the firewall
+	firewall-cmd --list-all
+	
+10, mysql serive configuraion setup:
+
+	mysql_secure_installation
+	
+		you need to give the following Y/N 
+		
+		Enter current password for root (enter for none):  <just enter we don't need anyroot passws>
+		Set root password? [Y/n] <Y set your passwd>
+		Remove anonymous users? [Y/n] <Y>
+		Disallow root login remotely? <Y>
+		Remove test database and access to it? [Y/n] <Y>
+		Reload privilege tables now? [Y/n] <y>
+		
+11, now login to the mysql with below command
+
+		mysql -u root -p  <enter the passwd>
+		
+12, give the below command to know the schemas
+	
+		show schemas;
+		
+13, create databases and tables 
+
+	create database db1;
+	
+	create database db2;
+	
+	use db1;
+	
+	create table dbtb1(name vrchar(10));
+	
+	use db2;
+	
+	create table dbtb2(name vrchar(10));
+		
+	show schemas;
+	
+	
+14, adding content to tables
+	insert into db1.dbtb1 values('India');
+		
+	insert into db2.dbtb2 values('UK');
+	
+	now quit the mysql with below command
+	quit
+	
+15, now we nned to edit mysql configuraion
+
+	vi /etc/my.cnf
+	
+	add the below lines to the file
+	
+	server-id=1
+	log-bin=mysql-bin
+	 
+	save the changes and exit 
+	
+16, Now log in to mysql with below command
+	mysql
+	
+	if your getting the below error:
+		[root@ip-172-31-40-42 centos]# mysql
+		ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)
+	
+	Create a file in your root dir called .my.cnf with the below command
+		vi .my.cnf
+		
+		enther the below lines to the file
+		
+		[client]
+		user=root
+		password=admin
+	
+	save and exit 
+	
+	now restart the mariadb
+	
+	now try to log in to mysql it should login directly to mysql.
+	
+17, create mysql user for replication.
+	 
+	 you need to log in to mysql first with nelow command
+	 
+		mysql
+		
+	now creationg replication user and passwd with the slave node: (user=repl, passwd=admin, slave user and ip address)
+	
+		grant replication slave on *.* to repl@'172.31.39.169' identified by 'admin';
+	
+	now the flush the privileges with the below command
+		flush privileges;
+	
+18, lock the table for read only access bez when you dump the db data to the slave server then
+    no one should modify the table content from slave server, it may couse issues.
+	
+	lock the table content from the below command
+		flush table with read lock;
+		
+	now check the status of the master with the below command	
+		show master status\g;
+		
+	if it not showing the master status then restart the mariadb with the below command
+		exit from the mariadb and restart the mariadb
+		
+		quit 
+		systemctl restart mariadb
+		
+	now check the master status
+		show master status\g;	
+
+19, we need the below details from the above command to setup master -slave configuraion
+
+		+------------------+----------+--------------+------------------+
+		| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB |
+		+------------------+----------+--------------+------------------+
+		| mysql-bin.000001 |      245 |              |                  |
+		+------------------+----------+--------------+------------------+
+		
+	
+	
+	
+	
+	
+		
+		
+		
+		
+		
+		
+		
